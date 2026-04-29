@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POSPIS: Pemulihan Kunci</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f4f0; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
+        h2 { color: #2E7D32; margin-bottom: 10px; }
+        p { color: #666; font-size: 14px; margin-bottom: 25px; }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        button { background-color: #2E7D32; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background-color: #1b5e20; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        .success { color: #2E7D32; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="card" id="form-container">
+        <h2>POSPIS</h2>
+        <p id="target-info">Memuat identitas nasabah...</p>
+        
+        <input type="password" id="pass1" placeholder="Password Baru (min 8 karakter)">
+        <input type="password" id="pass2" placeholder="Konfirmasi Password Baru">
+        
+        <button id="btn-submit" onclick="jalankanMisi()">AMANKAN PASSWORD</button>
+    </div>
+
+    <script>
+        // 1. Menangkap Kode Nasabah dari URL browser
+        const urlParams = new URLSearchParams(window.location.search);
+        const userCode = urlParams.get('code') || "SCAV-UNKNOWN";
+        document.getElementById('target-info').innerHTML = "Reset password untuk:<br><b>" + userCode + "</b>";
+
+        function jalankanMisi() {
+            const p1 = document.getElementById('pass1').value;
+            const p2 = document.getElementById('pass2').value;
+            const btn = document.getElementById('btn-submit');
+
+            if (p1.length < 8) { alert("Sandi terlalu lemah! Gunakan minimal 8 karakter."); return; }
+            if (p1 !== p2) { alert("Konfirmasi sandi tidak cocok!"); return; }
+
+            btn.disabled = true;
+            btn.innerHTML = "Menghubungi Markas...";
+
+            // 2. Kirim data ke Google Apps Script (Ubah URL ini dengan /exec Jenderal)
+            const apiUrl = "URL_WEB_APP_GAS_JENDERAL_DISINI";
+
+            // Mengirim data menggunakan metode POST
+            fetch(apiUrl, {
+                method: "POST",
+                mode: "no-cors", // Taktik untuk menembus batasan lintas domain
+                body: JSON.stringify({
+                    userCode: userCode,
+                    password: p1
+                })
+            }).then(() => {
+                // Karena mode no-cors, kita tidak bisa baca respon, tapi kita asumsikan terkirim
+                document.getElementById('form-container').innerHTML = 
+                    "<h2 class='success'>BERHASIL!</h2>" +
+                    "<p>Sinyal pembaruan sandi telah diterima oleh Markas.<br><br>Silakan kembali ke aplikasi POSPIS dan login dengan sandi baru.</p>";
+            }).catch(err => {
+                alert("Gangguan sinyal: " + err);
+                btn.disabled = false;
+                btn.innerHTML = "AMANKAN PASSWORD";
+            });
+        }
+    </script>
+</body>
+</html>
